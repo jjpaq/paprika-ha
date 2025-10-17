@@ -21,15 +21,17 @@ LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass: HomeAssistant, entry: PaprikaConfigEntry) -> bool:
     """Set up Paprika from a config entry."""
+    token = entry.data["token"]
+    client = PaprikaApi(token)
+
     coordinator = PaprikaCoordinator(
         hass=hass,
         logger=LOGGER,
         name=DOMAIN,
+        api=client,
         update_interval=timedelta(hours=1),
     )
 
-    token = entry.data["token"]
-    client = PaprikaApi(token)
     entry.runtime_data = PaprikaRuntimeData(client=client, coordinator=coordinator)
 
     # https://developers.home-assistant.io/docs/integration_fetching_data#coordinated-single-api-poll-for-data-for-all-entities

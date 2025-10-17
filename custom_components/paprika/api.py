@@ -1,3 +1,5 @@
+import gzip
+import json
 import logging
 from datetime import date, datetime
 from typing import NewType, TypedDict, cast
@@ -53,7 +55,7 @@ class GroceryListItem(TypedDict):
     deleted: bool
 
 
-class PaprikaAuthenticationError(Exception):
+class PaprikaError(Exception):
     def __init__(self, message: str):
         super().__init__(message)
 
@@ -89,7 +91,7 @@ class PaprikaApi:
                 _LOGGER.error(
                     f"Error from authentication endpoint: {json_response['error']['message']}"
                 )
-                raise PaprikaAuthenticationError(json_response["error"]["message"])
+                raise PaprikaError(json_response["error"]["message"])
 
             return json_response["result"]["token"]
 
@@ -123,3 +125,15 @@ class PaprikaApi:
         response.raise_for_status()
         response_json = await response.json()
         return [cast("GroceryListItem", item) for item in response_json["result"]]
+
+    async def post_groceries(self, groceries: list[GroceryListItem]) -> None:
+        data = gzip.compress(json.dumps(list(groceries)).encode("utf8"))
+        response = await self.session.post(
+            f"{self.base_url}/sync/groceries/",
+            files={"data": data},
+        )
+        response.raise_for_status()
+        if response.json().get("result", False) is False:
+            raise PaprikaError(
+                message=f"Error from groceries endpoint: {json.dumps(response.json())}"
+            )

@@ -1,5 +1,5 @@
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 from homeassistant.components.todo import TodoItem, TodoListEntity
 from homeassistant.components.todo.const import TodoItemStatus, TodoListEntityFeature
@@ -11,6 +11,7 @@ if TYPE_CHECKING:
 
     from .coordinator import PaprikaCoordinator
     from .data import PaprikaConfigEntry
+    from .api import GroceryListItem
 
 LOGGER = logging.getLogger(__name__)
 
@@ -54,9 +55,8 @@ class PaprikaGroceryList(TodoListEntity, CoordinatorEntity["PaprikaCoordinator"]
 
     async def async_create_todo_item(self, item: TodoItem) -> None:
         """Create a new grocery item in Paprika."""
-        LOGGER.debug(
-            f"Creating new grocery item in Paprika list. UID: {item.uid}",
-        )
+        LOGGER.debug("Creating todo item: %s in Paprika grocery list.", item.summary)
+
         # list_id = self._gkeep_list_id
         # text = item.summary
 
@@ -75,7 +75,33 @@ class PaprikaGroceryList(TodoListEntity, CoordinatorEntity["PaprikaCoordinator"]
 
     async def async_update_todo_item(self, item: TodoItem) -> None:
         """Update a grocery item in Paprika."""
-        LOGGER.debug("Updating todo item: %s in Paprika grocery list.", item.uid)
+        LOGGER.debug("Updating todo item: %s in Paprika grocery list.", item.summary)
+
+        try:
+            updatedGroceryList: list[GroceryListItem] = [
+                cast(
+                    GroceryListItem,
+                    {
+                        **grocery,
+                        "purchased": (
+                            True if item.status == TodoItemStatus.COMPLETED else False
+                        ),
+                    },
+                )
+                for grocery in sorted(
+                    self.coordinator.data.groceries, key=lambda i: i["order_flag"]
+                )
+            ]
+            await self.coordinator.api.post_groceries(updatedGroceryList)
+            LOGGER.debug("Successfully updated item %s in Paprika.", item.summary)
+
+        except Exception as e:
+            LOGGER.error("Failed to update item %s in Paprika: %s", item.summary, e)
+
+        finally:
+            # Resync data with Paprika
+            await self.coordinator._async_update_data()
+            LOGGER.debug("Requested data refresh after update.")
 
 
 async def async_setup_entry(

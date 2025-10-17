@@ -11,7 +11,7 @@ from homeassistant.const import CONF_EMAIL, CONF_PASSWORD
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
 
-from .api import PaprikaApi, PaprikaAuthenticationError
+from .api import PaprikaApi, PaprikaError
 from .const import DOMAIN
 
 _LOGGER = logging.getLogger(__name__)
@@ -33,7 +33,7 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     try:
         token = await PaprikaApi.login(data[CONF_EMAIL], data[CONF_PASSWORD])
         return {"token": token, "title": data[CONF_EMAIL]}
-    except PaprikaAuthenticationError:
+    except PaprikaError:
         raise InvalidAuth
 
     # If you cannot connect:
