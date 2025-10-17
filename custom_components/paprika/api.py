@@ -128,12 +128,29 @@ class PaprikaApi:
 
     async def post_groceries(self, groceries: list[GroceryListItem]) -> None:
         data = gzip.compress(json.dumps(list(groceries)).encode("utf8"))
-        response = await self.session.post(
-            f"{self.base_url}/sync/groceries/",
-            files={"data": data},
+
+        form = aiohttp.FormData()
+
+        form.add_field(
+            name="data", value=data, filename="data.gz", content_type="application/gzip"
         )
-        response.raise_for_status()
-        if response.json().get("result", False) is False:
-            raise PaprikaError(
-                message=f"Error from groceries endpoint: {json.dumps(response.json())}"
-            )
+
+        async with self.session.post(
+            f"{self.base_url}/sync/groceries/", data=form
+        ) as response:
+            response.raise_for_status()
+            json_response = await response.json()
+            if json_response.get("result", False) is False:
+                raise PaprikaError(
+                    message=f"Error from groceries endpoint: {json.dumps(response.json())}"
+                )
+
+        # response = await self.session.post(
+        #     f"{self.base_url}/sync/groceries/",
+        #     files={"data": data},
+        # )
+        # response.raise_for_status()
+        # if response.json().get("result", False) is False:
+        #     raise PaprikaError(
+        #         message=f"Error from groceries endpoint: {json.dumps(response.json())}"
+        #     )
