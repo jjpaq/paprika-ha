@@ -92,11 +92,7 @@ class PaprikaGroceryList(TodoListEntity, CoordinatorEntity["PaprikaCoordinator"]
                     GroceryListItem,
                     {
                         **grocery,
-                        "name": (
-                            grocery["name"]
-                            if grocery["uid"] != item.uid
-                            else self.test_get_replacement_name(item, grocery["name"])
-                        ),
+                        "name": item.summary,
                         "purchased": (
                             grocery["purchased"]
                             if grocery["uid"] != item.uid
