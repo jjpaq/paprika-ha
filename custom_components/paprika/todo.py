@@ -84,6 +84,11 @@ class PaprikaGroceryList(TodoListEntity, CoordinatorEntity["PaprikaCoordinator"]
                     GroceryListItem,
                     {
                         **grocery,
+                        "name": (
+                            grocery["name"]
+                            if grocery["uid"] != item.uid
+                            else item.summary
+                        ),
                         "purchased": (
                             grocery["purchased"]
                             if grocery["uid"] != item.uid
@@ -100,8 +105,10 @@ class PaprikaGroceryList(TodoListEntity, CoordinatorEntity["PaprikaCoordinator"]
                 )
             ]
 
-            self.coordinator.data.groceries = updatedGroceryList
             await self.coordinator.api.post_groceries(updatedGroceryList)
+
+            self.coordinator.data.groceries = updatedGroceryList
+
             LOGGER.debug("Successfully updated item %s in Paprika.", item.summary)
 
         except Exception as e:
