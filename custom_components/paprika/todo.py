@@ -170,8 +170,8 @@ class PaprikaGroceryList(TodoListEntity, CoordinatorEntity["PaprikaCoordinator"]
                 self.coordinator.data.groceries, key=lambda i: i["order_flag"]
             )
 
-            if newItem:
-                updatedGroceryList.append(newItem)
+            updatedGroceryList.append(newItem)
+            LOGGER.debug("Added item %s to list.", item.summary)
 
             await self.coordinator.api.post_groceries(updatedGroceryList)
 

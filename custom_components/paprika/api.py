@@ -64,9 +64,9 @@ class PaprikaApi:
     base_url: str
     user_agent: str
 
-    def __del__(self):
+    async def __del__(self):
         # TODO: verify this works as expected when erroring during setup.
-        self.session.close()
+        await self.session.close()
 
     def __init__(self, token: str):
         _LOGGER.info("Setting up client")
