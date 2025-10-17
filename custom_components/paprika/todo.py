@@ -2,7 +2,7 @@ import logging
 from typing import TYPE_CHECKING
 
 from homeassistant.components.todo import TodoItem, TodoListEntity
-from homeassistant.components.todo.const import TodoItemStatus
+from homeassistant.components.todo.const import TodoItemStatus, TodoListEntityFeature
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 if TYPE_CHECKING:
