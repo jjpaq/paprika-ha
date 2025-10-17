@@ -85,7 +85,13 @@ class PaprikaGroceryList(TodoListEntity, CoordinatorEntity["PaprikaCoordinator"]
                     {
                         **grocery,
                         "purchased": (
-                            True if item.status == TodoItemStatus.COMPLETED else False
+                            grocery["purchased"]
+                            if grocery["uid"] != item.uid
+                            else (
+                                True
+                                if item.status == TodoItemStatus.COMPLETED
+                                else False
+                            )
                         ),
                     },
                 )
@@ -93,6 +99,8 @@ class PaprikaGroceryList(TodoListEntity, CoordinatorEntity["PaprikaCoordinator"]
                     self.coordinator.data.groceries, key=lambda i: i["order_flag"]
                 )
             ]
+
+            self.coordinator.data.groceries = updatedGroceryList
             await self.coordinator.api.post_groceries(updatedGroceryList)
             LOGGER.debug("Successfully updated item %s in Paprika.", item.summary)
 
