@@ -1,5 +1,5 @@
 import logging
-from typing import TYPE_CHECKING, cast
+from typing import Any, TYPE_CHECKING, cast
 
 from homeassistant.components.todo import TodoItem, TodoListEntity
 from homeassistant.components.todo.const import TodoItemStatus, TodoListEntityFeature
@@ -133,44 +133,32 @@ class PaprikaGroceryList(TodoListEntity, CoordinatorEntity["PaprikaCoordinator"]
 
         try:
 
-            newItem: GroceryListItem | None = (
-                {
-                    "uid": item.uid,
-                    "recipe_uid": None,
-                    "name": item.summary if item.summary else "New Item",
-                    "recipe_uid": None,
-                    "order_flag": (
-                        len(self.coordinator.data.groceries)
-                        if self.coordinator.data.groceries
-                        else 1
-                    ),
-                    "purchased": item.status == TodoItemStatus.COMPLETED,
-                    "aisle": None,
-                    "ingredient": None,
-                    "recipe": None,
-                    "instruction": None,
-                    "quantity": None,
-                    "separate": False,
-                    "aisle_uid": None,
-                    "list_uid": (
-                        self.coordinator.data.groceries[0]["list_uid"]
-                        if (
-                            self.coordinator.data.groceries
-                            and len(self.coordinator.data.groceries) > 0
-                        )
-                        else None
-                    ),
-                    "deleted": False,
-                }
-                if item.uid
-                else None
-            )
+            newItem = {
+                "uid": item.uid,
+                "name": item.summary,
+                "order_flag": (
+                    len(self.coordinator.data.groceries)
+                    if self.coordinator.data.groceries
+                    else 1
+                ),
+                "purchased": item.status == TodoItemStatus.COMPLETED,
+                "list_uid": (
+                    self.coordinator.data.groceries[0]["list_uid"]
+                    if (
+                        self.coordinator.data.groceries
+                        and len(self.coordinator.data.groceries) > 0
+                    )
+                    else None
+                ),
+                "deleted": False,
+            }
 
-            updatedGroceryList: list[GroceryListItem] = sorted(
+            updatedGroceryList: list[Any] = sorted(
                 self.coordinator.data.groceries, key=lambda i: i["order_flag"]
             )
 
             updatedGroceryList.append(newItem)
+
             LOGGER.debug("Added item %s to list.", item.summary)
 
             await self.coordinator.api.post_groceries(updatedGroceryList)
