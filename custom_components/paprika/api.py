@@ -4,6 +4,8 @@ from enum import Enum
 from typing import NewType, Optional, TypedDict, cast
 
 import aiohttp
+import gzip
+import json
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -51,6 +53,7 @@ class GroceryListItem(TypedDict):
     separate: bool
     aisle_uid: str
     list_uid: str
+    deleted: bool
 
 
 class PaprikaAuthenticationError(Exception):
@@ -59,6 +62,9 @@ class PaprikaAuthenticationError(Exception):
 
 
 class PaprikaApi:
+    base_url: str
+    user_agent: str
+
     def __del__(self):
         # TODO: verify this works as expected when erroring during setup.
         self.session.close()
@@ -66,8 +72,11 @@ class PaprikaApi:
     def __init__(self, token: str):
         _LOGGER.info("Setting up client")
         self.access_token = token
+        self.base_url = "https://www.paprikaapp.com/api/v2"
+        self.user_agent = "Paprika 3/3.8.2 (com.hindsightlabs.paprika.ios.v3; build:71; iOS 18.1.1) Alamofire/5.2.2"
         self.session = aiohttp.ClientSession("https://www.paprikaapp.com/api/v2/")
         self.session.headers["authorization"] = f"Bearer {self.access_token}"
+        self.session.headers["user-agent"] = self.user_agent
 
     @classmethod
     async def login(cls, email: str, password: str):
