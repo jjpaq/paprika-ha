@@ -16,6 +16,11 @@ LOGGER = logging.getLogger(__name__)
 
 
 class PaprikaGroceryList(TodoListEntity, CoordinatorEntity["PaprikaCoordinator"]):
+
+    _attr_supported_features = (
+        TodoListEntityFeature.CREATE_TODO_ITEM | TodoListEntityFeature.UPDATE_TODO_ITEM
+    )
+
     def __init__(
         self,
         coordinator: "PaprikaCoordinator",
@@ -37,14 +42,41 @@ class PaprikaGroceryList(TodoListEntity, CoordinatorEntity["PaprikaCoordinator"]
             TodoItem(
                 uid=item["uid"],
                 summary=item["name"],
-                status=TodoItemStatus.COMPLETED
-                if item["purchased"]
-                else TodoItemStatus.NEEDS_ACTION,
+                status=(
+                    TodoItemStatus.COMPLETED
+                    if item["purchased"]
+                    else TodoItemStatus.NEEDS_ACTION
+                ),
             )
             for item in sorted(
                 self.coordinator.data.groceries, key=lambda i: i["order_flag"]
             )
         ]
+
+    async def async_create_todo_item(self, item: TodoItem) -> None:
+        """Create a new grocery item in Paprika."""
+        LOGGER.debug(
+            f"Creating new grocery item in Paprika list. UID: {item.uid}",
+        )
+        # list_id = self._gkeep_list_id
+        # text = item.summary
+
+        # try:
+        #     # Create the new item in the specified list
+        #     await self.api.async_create_todo_item(list_id, text)
+        #     LOGGER.debug("Successfully created new item '%s' in Google Keep.", text)
+
+        # except Exception as e:
+        #     LOGGER.error("Failed to create new item '%s' in Google Keep: %s", text, e)
+
+        # finally:
+        #     # Request refresh to synchronize with Google Keep
+        #     await self.coordinator.async_refresh()
+        #     LOGGER.debug("Requested data refresh after item creation.")
+
+    async def async_update_todo_item(self, item: TodoItem) -> None:
+        """Update a grocery item in Paprika."""
+        LOGGER.debug("Updating todo item: %s in Paprika grocery list.", item.uid)
 
 
 async def async_setup_entry(
