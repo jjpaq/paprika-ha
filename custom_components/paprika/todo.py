@@ -133,27 +133,30 @@ class PaprikaGroceryList(TodoListEntity, CoordinatorEntity["PaprikaCoordinator"]
 
         try:
 
-            newItem = {
-                "uid": item.uid,
-                "name": item.summary,
-                "order_flag": (
-                    len(self.coordinator.data.groceries)
-                    if self.coordinator.data.groceries
-                    else 1
-                ),
-                "purchased": item.status == TodoItemStatus.COMPLETED,
-                "list_uid": (
-                    self.coordinator.data.groceries[0]["list_uid"]
-                    if (
-                        self.coordinator.data.groceries
-                        and len(self.coordinator.data.groceries) > 0
-                    )
-                    else None
-                ),
-                "deleted": False,
-            }
+            newItem = cast(
+                GroceryListItem,
+                {
+                    "uid": item.uid,
+                    "name": item.summary,
+                    "order_flag": (
+                        len(self.coordinator.data.groceries)
+                        if self.coordinator.data.groceries
+                        else 1
+                    ),
+                    "purchased": item.status == TodoItemStatus.COMPLETED,
+                    "list_uid": (
+                        self.coordinator.data.groceries[0]["list_uid"]
+                        if (
+                            self.coordinator.data.groceries
+                            and len(self.coordinator.data.groceries) > 0
+                        )
+                        else None
+                    ),
+                    "deleted": False,
+                },
+            )
 
-            updatedGroceryList: list[Any] = sorted(
+            updatedGroceryList: list[GroceryListItem] = sorted(
                 self.coordinator.data.groceries, key=lambda i: i["order_flag"]
             )
 
