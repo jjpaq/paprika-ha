@@ -74,6 +74,14 @@ class PaprikaGroceryList(TodoListEntity, CoordinatorEntity["PaprikaCoordinator"]
         #     await self.coordinator.async_refresh()
         #     LOGGER.debug("Requested data refresh after item creation.")
 
+    def test_get_replacement_name(self, item: TodoItem, originalName: str) -> str:
+        LOGGER.debug(
+            "Updating name of todo item: %s in Paprika grocery list with %s.",
+            item.summary,
+            originalName,
+        )
+        return item.summary if item.summary else ""
+
     async def async_update_todo_item(self, item: TodoItem) -> None:
         """Update a grocery item in Paprika."""
         LOGGER.debug("Updating todo item: %s in Paprika grocery list.", item.summary)
@@ -84,10 +92,10 @@ class PaprikaGroceryList(TodoListEntity, CoordinatorEntity["PaprikaCoordinator"]
                     GroceryListItem,
                     {
                         **grocery,
-                        "ingredient": (
-                            grocery["ingredient"]
+                        "name": (
+                            grocery["name"]
                             if grocery["uid"] != item.uid
-                            else item.summary
+                            else self.test_get_replacement_name(item, grocery["name"])
                         ),
                         "purchased": (
                             grocery["purchased"]
