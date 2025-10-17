@@ -54,33 +54,33 @@ class PaprikaGroceryList(TodoListEntity, CoordinatorEntity["PaprikaCoordinator"]
             )
         ]
 
-    async def async_create_todo_item(self, item: TodoItem) -> None:
-        """Create a new grocery item in Paprika."""
-        LOGGER.debug("Creating todo item: %s in Paprika grocery list.", item.summary)
+    # async def async_create_todo_item(self, item: TodoItem) -> None:
+    #     """Create a new grocery item in Paprika."""
+    #     LOGGER.debug("Creating todo item: %s in Paprika grocery list.", item.summary)
 
-        # list_id = self._gkeep_list_id
-        # text = item.summary
+    # list_id = self._gkeep_list_id
+    # text = item.summary
 
-        # try:
-        #     # Create the new item in the specified list
-        #     await self.api.async_create_todo_item(list_id, text)
-        #     LOGGER.debug("Successfully created new item '%s' in Google Keep.", text)
+    # try:
+    #     # Create the new item in the specified list
+    #     await self.api.async_create_todo_item(list_id, text)
+    #     LOGGER.debug("Successfully created new item '%s' in Google Keep.", text)
 
-        # except Exception as e:
-        #     LOGGER.error("Failed to create new item '%s' in Google Keep: %s", text, e)
+    # except Exception as e:
+    #     LOGGER.error("Failed to create new item '%s' in Google Keep: %s", text, e)
 
-        # finally:
-        #     # Request refresh to synchronize with Google Keep
-        #     await self.coordinator.async_refresh()
-        #     LOGGER.debug("Requested data refresh after item creation.")
+    # finally:
+    #     # Request refresh to synchronize with Google Keep
+    #     await self.coordinator.async_refresh()
+    #     LOGGER.debug("Requested data refresh after item creation.")
 
-    def test_get_replacement_name(self, item: TodoItem, originalName: str) -> str:
-        LOGGER.debug(
-            "Updating name of todo item: %s in Paprika grocery list with %s.",
-            item.summary,
-            originalName,
-        )
-        return item.summary if item.summary else ""
+    # def test_get_replacement_name(self, item: TodoItem, originalName: str) -> str:
+    #     LOGGER.debug(
+    #         "Updating name of todo item: %s in Paprika grocery list with %s.",
+    #         item.summary,
+    #         originalName,
+    #     )
+    #     return item.summary if item.summary else ""
 
     async def async_update_todo_item(self, item: TodoItem) -> None:
         """Update a grocery item in Paprika."""
@@ -92,7 +92,11 @@ class PaprikaGroceryList(TodoListEntity, CoordinatorEntity["PaprikaCoordinator"]
                     GroceryListItem,
                     {
                         **grocery,
-                        "name": item.summary,
+                        "name": (
+                            grocery["name"]
+                            if grocery["uid"] != item.uid
+                            else item.summary
+                        ),
                         "purchased": (
                             grocery["purchased"]
                             if grocery["uid"] != item.uid
@@ -117,6 +121,66 @@ class PaprikaGroceryList(TodoListEntity, CoordinatorEntity["PaprikaCoordinator"]
 
         except Exception as e:
             LOGGER.error("Failed to update item %s in Paprika: %s", item.summary, e)
+
+        finally:
+            # Resync data with Paprika
+            await self.coordinator._async_update_data()
+            LOGGER.debug("Requested data refresh after update.")
+
+    async def async_create_todo_item(self, item: TodoItem) -> None:
+        """Add a grocery item in Paprika."""
+        LOGGER.debug("Creating new item: %s in Paprika grocery list.", item.summary)
+
+        try:
+
+            newItem: GroceryListItem | None = (
+                {
+                    "uid": item.uid,
+                    "recipe_uid": None,
+                    "name": item.summary if item.summary else "New Item",
+                    "recipe_uid": None,
+                    "order_flag": (
+                        len(self.coordinator.data.groceries)
+                        if self.coordinator.data.groceries
+                        else 1
+                    ),
+                    "purchased": item.status == TodoItemStatus.COMPLETED,
+                    "aisle": None,
+                    "ingredient": None,
+                    "recipe": None,
+                    "instruction": None,
+                    "quantity": None,
+                    "separate": False,
+                    "aisle_uid": None,
+                    "list_uid": (
+                        self.coordinator.data.groceries[0]["list_uid"]
+                        if (
+                            self.coordinator.data.groceries
+                            and len(self.coordinator.data.groceries) > 0
+                        )
+                        else None
+                    ),
+                    "deleted": False,
+                }
+                if item.uid
+                else None
+            )
+
+            updatedGroceryList: list[GroceryListItem] = sorted(
+                self.coordinator.data.groceries, key=lambda i: i["order_flag"]
+            )
+
+            if newItem:
+                updatedGroceryList.append(newItem)
+
+            await self.coordinator.api.post_groceries(updatedGroceryList)
+
+            self.coordinator.data.groceries = updatedGroceryList
+
+            LOGGER.debug("Successfully added item %s in Paprika.", item.summary)
+
+        except Exception as e:
+            LOGGER.error("Failed to add item %s in Paprika: %s", item.summary, e)
 
         finally:
             # Resync data with Paprika

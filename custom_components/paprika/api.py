@@ -2,7 +2,7 @@ import gzip
 import json
 import logging
 from datetime import date, datetime
-from typing import NewType, TypedDict, cast
+from typing import NewType, Optional, TypedDict, cast
 
 import aiohttp
 
@@ -44,14 +44,14 @@ class GroceryListItem(TypedDict):
     name: str
     order_flag: int
     purchased: bool
-    aisle: str
-    ingredient: str
-    recipe: str
-    instruction: str
-    quantity: str
+    aisle: Optional[str]
+    ingredient: Optional[str]
+    recipe: Optional[str]
+    instruction: Optional[str]
+    quantity: Optional[str]
     separate: bool
-    aisle_uid: str
-    list_uid: str
+    aisle_uid: Optional[str]
+    list_uid: Optional[str]
     deleted: bool
 
 
