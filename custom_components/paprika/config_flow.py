@@ -6,12 +6,10 @@ import logging
 from typing import Any
 
 import voluptuous as vol
-
 from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
-from homeassistant.const import CONF_PASSWORD, CONF_EMAIL
+from homeassistant.const import CONF_EMAIL, CONF_PASSWORD
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
-
 
 from .api import PaprikaApi, PaprikaAuthenticationError
 from .const import DOMAIN
@@ -25,12 +23,13 @@ STEP_USER_DATA_SCHEMA = vol.Schema(
     }
 )
 
+
 async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str, Any]:
-    """Validate the user input allows us to connect.
+    """
+    Validate the user input allows us to connect.
 
     Data has the keys from STEP_USER_DATA_SCHEMA with values provided by the user.
     """
-
     try:
         token = await PaprikaApi.login(data[CONF_EMAIL], data[CONF_PASSWORD])
         return {"token": token, "title": data[CONF_EMAIL]}
@@ -41,7 +40,6 @@ async def validate_input(hass: HomeAssistant, data: dict[str, Any]) -> dict[str,
     # throw CannotConnect
     # If the authentication is wrong:
     # InvalidAuth
-    
 
 
 class PaprikaConfigFlow(ConfigFlow, domain=DOMAIN):
@@ -66,7 +64,9 @@ class PaprikaConfigFlow(ConfigFlow, domain=DOMAIN):
                 _LOGGER.exception("Unexpected exception")
                 errors["base"] = "unknown"
             else:
-                return self.async_create_entry(title=info["title"], data={"token": info["token"]})
+                return self.async_create_entry(
+                    title=info["title"], data={"token": info["token"]}
+                )
 
         return self.async_show_form(
             step_id="user", data_schema=STEP_USER_DATA_SCHEMA, errors=errors

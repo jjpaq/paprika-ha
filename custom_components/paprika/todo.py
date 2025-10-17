@@ -16,7 +16,6 @@ LOGGER = logging.getLogger(__name__)
 
 
 class PaprikaGroceryList(TodoListEntity, CoordinatorEntity["PaprikaCoordinator"]):
-
     _attr_supported_features = (
         TodoListEntityFeature.CREATE_TODO_ITEM | TodoListEntityFeature.UPDATE_TODO_ITEM
     )

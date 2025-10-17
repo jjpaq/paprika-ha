@@ -1,11 +1,8 @@
 import logging
 from datetime import date, datetime
-from enum import Enum
-from typing import NewType, Optional, TypedDict, cast
+from typing import NewType, TypedDict, cast
 
 import aiohttp
-import gzip
-import json
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -35,7 +32,7 @@ class PlannedMeal(TypedDict):
     name: str
     order_flag: int
     type_uid: str
-    scale: Optional[int]
+    scale: int | None
     is_ingredient: bool
 
 

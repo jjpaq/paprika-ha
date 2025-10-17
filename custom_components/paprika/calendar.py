@@ -58,8 +58,7 @@ class PaprikaMealCalendar(CalendarEntity, CoordinatorEntity["PaprikaCoordinator"
                 summary=meal[0]["name"],
                 description=meal[0]["name"],
             )
-        else:
-            return None
+        return None
 
     async def async_get_events(self, hass, start_date, end_date):
         LOGGER.info("@@@ Getting events")

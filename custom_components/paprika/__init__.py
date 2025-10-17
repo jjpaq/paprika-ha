@@ -21,7 +21,6 @@ LOGGER = logging.getLogger(__name__)
 
 async def async_setup_entry(hass: HomeAssistant, entry: PaprikaConfigEntry) -> bool:
     """Set up Paprika from a config entry."""
-
     coordinator = PaprikaCoordinator(
         hass=hass,
         logger=LOGGER,
