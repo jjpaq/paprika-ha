@@ -5,13 +5,14 @@ from homeassistant.components.todo import TodoItem, TodoListEntity
 from homeassistant.components.todo.const import TodoItemStatus, TodoListEntityFeature
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
+from .api import GroceryListItem
+from .coordinator import PaprikaCoordinator
+
 if TYPE_CHECKING:
     from homeassistant.core import HomeAssistant
     from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
-    from .coordinator import PaprikaCoordinator
     from .data import PaprikaConfigEntry
-    from .api import GroceryListItem
 
 LOGGER = logging.getLogger(__name__)
 
