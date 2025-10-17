@@ -10,8 +10,10 @@ from homeassistant.helpers.debounce import Debouncer
 from homeassistant.helpers.typing import UNDEFINED, UndefinedType
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
+from .api import PaprikaApi
+
 if TYPE_CHECKING:
-    from .api import PaprikaApi, GroceryListItem, MealType, PlannedMeal
+    from .api import GroceryListItem, MealType, PlannedMeal
     from .data import PaprikaConfigEntry
 
 
