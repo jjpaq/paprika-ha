@@ -84,8 +84,8 @@ class PaprikaGroceryList(TodoListEntity, CoordinatorEntity["PaprikaCoordinator"]
                     GroceryListItem,
                     {
                         **grocery,
-                        "name": (
-                            grocery["name"]
+                        "ingredient": (
+                            grocery["ingredient"]
                             if grocery["uid"] != item.uid
                             else item.summary
                         ),
